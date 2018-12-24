@@ -35,7 +35,7 @@ class Character:
 		self.mDEF = mDEF
 		self.mRES = mRES
 		self.mSPD = mSPD
-		
+
 		self.level = 1
 		self.XP = 0
 		self.AP = 0
@@ -80,13 +80,52 @@ class Character:
 
 def main():
 
-	kiyomi = Character("Kiyomi", 1000, 40000, 300, 6500, 500, 25000, 250, 10000,\
-						300, 15000, 400, 16000, 300, 12000, 350, 15000, 'L')
+	## Elements : Fire = F / Ice = I / Wind = W / Lightning = L
 
-	kiyomi.gain_xp(4050)
+	k = Character("Kiyomi",		120, 600, 70, 350, \
+                    			5, 80, 3, 68, \
+				     			4, 74, 3, 68, \
+                            	3, 74, 4, 74, 'L')
 
+	ai = Character("Airi",		120, 600, 80, 400, \
+                    			4, 74, 4, 74, \
+				     			3, 68, 3, 68, \
+                            	2, 64, 4, 78, 'W')
+
+	s = Character("Shinji", 	100, 500, 60, 300, \
+                    			2, 62, 1, 56, \
+				     			3, 68, 2, 62, \
+                            	5, 80, 5, 90, 'N')
+
+	aya = Character("Ayame", 	150, 750, 55, 275, \
+                    			6, 86, 2, 62, \
+				     			4, 82, 2, 62, \
+                            	1, 56, 2, 62, 'F')
+
+	r = Character("Rika", 		100, 500, 90, 450, \
+                    			1, 56, 5, 80, \
+				     			2, 62, 4, 74, \
+                            	3, 74, 3, 68, 'I')
+
+	y = Character("Yuki",	 	100, 500, 80, 400, \
+                    			2, 62, 3, 68, \
+				     			2, 62, 5, 80, \
+                            	4, 78, 3, 71, 'N')
+
+	h = Character("Hiro", 		120, 600, 80, 400, \
+                    			3, 68, 4, 74, \
+				     			3, 68, 4, 74, \
+                            	5, 80, 4, 82, 'N')
+
+	t = Character("Tamiko", 	120, 600, 70, 350, \
+                    			3, 68, 2, 62, \
+				     			5, 90, 4, 74, \
+                            	3, 68, 3, 68, 'N')
+
+	k.gain_xp(4050)
 
 	return
+
 
 if __name__ == '__main__':
 	main()
