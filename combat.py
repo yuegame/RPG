@@ -2,6 +2,66 @@ import sys
 from math import inf, sqrt
 from heapq import heappop, heappush
 
+STACK_SIZE = 4
+
+class Battle:
+
+	def __init__(self, actors):
+		self.energy = {}
+		self.stack = []
+
+		self.side1 = []
+		self.side2 = []
+
+		for actor,side in actors:
+			if side == 1:
+				self.side1.append(actor)
+			else:
+				self.side2.append(actor)
+
+		for char in self.side1+self.side2:
+			self.energy[char] = 0
+
+		for i in range(STACK_SIZE):
+			self.stack.append(self.next_character())
+
+	def update_stack(self):
+		turn_character = self.stack.pop(0)
+		print('\n'+"It's", turn_character+"'s turn!")
+		self.stack.append(self.next_character())
+
+		self.print_stack()
+		
+
+	def next_character(self):
+		trigger = False
+
+		while(not trigger):
+			for key, val in self.energy.items():
+				if(val >= 10000):
+					trigger = True
+
+			for key in self.energy.keys():
+				self.energy[key] += key.SPD
+
+		actions = []
+		for key, val in self.energy.items():
+			if(val >= 10000):
+				actions.append((key, val))
+
+		action = max(actions, key = lambda item:item[1])[0]
+		self.energy[action] = 0
+
+		return(action.name)
+
+	def print_stack(self):
+		print("\nStack is:")
+		for char in self.stack:
+			print(char)
+
+
+
+
 class Character:
 
 	def __init__(self, name, HP, mHP, SP, mSP, STR, mSTR, MGI, mMGI, \
@@ -82,6 +142,20 @@ def main():
 
 	kiyomi = Character("Kiyomi", 1000, 40000, 300, 6500, 500, 25000, 250, 10000,\
 						300, 15000, 400, 16000, 300, 12000, 350, 15000, 'L')
+
+	kiyomi2 = Character("Kiyomi2", 1000, 40000, 300, 6500, 500, 25000, 250, 10000,\
+						300, 15000, 400, 16000, 300, 12000, 550, 15000, 'L')
+
+	kiyomi3 = Character("Kiyomi3", 1000, 40000, 300, 6500, 500, 25000, 250, 10000,\
+						300, 15000, 400, 16000, 300, 12000, 700, 15000, 'L')
+
+	battle = Battle([(kiyomi,1), (kiyomi2,1), (kiyomi3,1)])
+
+
+	battle.print_stack()
+
+	battle.update_stack()
+
 
 	kiyomi.gain_xp(4050)
 
