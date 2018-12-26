@@ -43,7 +43,7 @@ class Battle:
 	def update_counter(self):
 		turn_character = self.next_character()
 		print('\n'+"It's", turn_character.name+"'s turn!")
-		
+
 		self.take_turn(turn_character)
 		self.print_counter()
 
@@ -82,7 +82,7 @@ class Battle:
 		choice = input("\nEnter a move: ")
 
 		self.execute_attack(options_list[int(choice)-1], character)
-		
+
 	# Figures out targets for attack
 	def execute_attack(self, attack, source):
 		if(attack.target == "ST"):
@@ -146,11 +146,11 @@ class Battle:
 	def print_status(self):
 		print('\n'+"*******Side 1*******")
 		for char in self.side1:
-			char.print_stats()
+			char.print_stats_hp()
 
 		print('\n'+"*******Side 2*******")
 		for char in self.side2:
-			char.print_stats()
+			char.print_stats_hp()
 
 
 class Character:
@@ -228,7 +228,7 @@ class Character:
 		self.XP += xp_gain
 		self.stat_update()
 
-	# Print functions	
+	# Print functions
 
 	def print_stats(self):
 		print()
@@ -241,6 +241,9 @@ class Character:
 
 		print('\n'+"XP:",str(self.XP)+"/100" if self.level != 90 else str(self.XP))
 		print("AP:",str(self.AP))
+
+	def print_stats_hp(self):
+		print(self.name, "HP:", self.HP, "/", self.bHP)
 
 	def print_attacks(self):
 		print('\n'+self.name+"'s attacks are:")
