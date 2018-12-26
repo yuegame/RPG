@@ -270,6 +270,8 @@ def main():
 	attack_list = []
 
 	character_list = []
+
+	mob_list = []
 	## Elements : Fire = F / Ice = I / Wind = W / Lightning = L
 
 	# Load attack data
@@ -299,14 +301,33 @@ def main():
 		except StopIteration:
 			print("Character loading finished!")
 
+	# Load mob data
+	with open("mob_info.csv") as mob_info_file:
+		info = csv.reader(mob_info_file, delimiter = ',')
+		info.__next__()
+		try:
+			while(True):
+				data_line = info.__next__()
+				for i in range(1, len(data_line)-1):
+					data_line[i] = int(data_line[i])
+				new_char = Character(data_line)
+				attack_line = info.__next__()
+				new_char.add_attack(attack_line, attack_list)
+				mob_list.append(new_char)
+		except StopIteration:
+			print("Mob loading finished!")
+
 	# Initialize characters
 	kiyomi = new_character("Kiyomi", character_list)
 	airi = new_character("Airi", character_list)
 	ayame = new_character("Ayame", character_list)
 
+	goon = new_character("Mob A", mob_list)
+
 	kiyomi.print_simple_attacks()
 	airi.print_simple_attacks()
 	ayame.print_simple_attacks()
+	goon.print_simple_attacks()
 
 	#airi.print_stats()
 	#airi.print_attacks()
