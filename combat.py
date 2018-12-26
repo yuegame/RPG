@@ -98,6 +98,7 @@ class Battle:
 			target_display = ""
 			for target in targets:
 				target_display = target_display+str(index)+'.'+target.name+"     "
+				index += 1
 			print(target_display)
 
 			choice = input("\nPick a target: ")
@@ -355,7 +356,7 @@ def main():
     """
 
     # Begin battle
-	battle = Battle([(kiyomi,2), (airi,1), (ayame,2)])
+	battle = Battle([(kiyomi,1), (airi,1), (ayame,1), (goon,2)])
 
 
 	battle.print_counter()
