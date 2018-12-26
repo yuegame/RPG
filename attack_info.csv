@@ -1,0 +1,4 @@
+name,speed,target,turn,mod,damage,type,description
+Cut,low,ST,instant,STR,20,physical,Deal 20 physical damage to one target
+Slice,med,AoE,instant,STR,10,physical,Deal 10 physical damage to all targets
+Recover,low,ST,instant,MGI,10,buff,Heals 10 to an ally

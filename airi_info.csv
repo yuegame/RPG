@@ -1,0 +1,4 @@
+name,HP,mHP,SP,mSP,STR,mSTR,MGI,mMGI,DEX,mDEX,DEF,mDEF,RES,mRES,SPD,mSPD,element
+Airi,120,600,80,400,4,74,4,74,3,68,3,68,2,64,5,78,W
+Cut,low,ST,instant,STR,20,Deal physical damage to one target
+Slice,med,AoE,instant,STR,10,Deal physical damage to all targets

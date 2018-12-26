@@ -1,14 +1,16 @@
 import sys
+import csv
 from math import inf, sqrt
 from heapq import heappop, heappush
+from attack_data import Attack
 
-STACK_SIZE = 40
+STACK_SIZE = 10
 
 class Battle:
 
 	def __init__(self, actors):
-		self.energy = {}
-		self.stack = []
+		self.counter = {}
+		#self.stack = []
 
 		self.side1 = []
 		self.side2 = []
@@ -20,85 +22,184 @@ class Battle:
 				self.side2.append(actor)
 
 		for char in self.side1+self.side2:
-			self.energy[char] = 0
+			self.counter[char] = 100-char.SPD
 
-		for i in range(STACK_SIZE):
-			self.stack.append(self.next_character())
+	# Battle control flow functions
+	def battle_start(self):
+		while(self.battle_ended() is False):
+			self.update_counter()
 
-	def update_stack(self):
-		turn_character = self.stack.pop(0)
-		print('\n'+"It's", turn_character+"'s turn!")
-		self.stack.append(self.next_character())
+	def battle_ended(self):
+		if(len(self.side1) > 0  and len(self.side2) > 0):
+			return False
+		if(len(self.side1) == 0):
+			print('\n'+"Side 2 wins!")
+		elif(len(self.side2) == 0):
+			print('\n'+"Side 1 wins!")
+		return True
 
-		self.print_stack()
+    # Begins next turn
+	def update_counter(self):
+		turn_character = self.next_character()
+		print('\n'+"It's", turn_character.name+"'s turn!")
 		
+		self.take_turn(turn_character)
+		self.print_counter()
 
+	# Picks next character to go and updates counters
 	def next_character(self):
 		trigger = False
 
-		while(not trigger):
-			for key, val in self.energy.items():
-				if(val >= 10000):
+		while(True):
+			for key, val in self.counter.items():
+				if(val <= 0):
 					trigger = True
+					turn_character = key
+			if(trigger):
+				break
+			for key in self.counter.keys():
+				self.counter[key] -= 1
 
-			for key in self.energy.keys():
-				self.energy[key] += key.SPD
+		self.counter[turn_character] = 100-turn_character.SPD
 
-		actions = []
-		for key, val in self.energy.items():
-			if(val >= 10000):
-				actions.append((key, val))
+		return(turn_character)
 
-		action = max(actions, key = lambda item:item[1])[0]
-		self.energy[action] = 0
+	# Choose attack
+	def take_turn(self, character):
+		options_list = []
+		for attack in character.attacks:
+			options_list.append(attack)
 
-		return(action.name)
+		index = 1
+		option_display = ""
+		for option in options_list:
+			if("Attack" in str(type(option))):
+				option_display = option_display+str(index)+'.'+option.name+"     "
+				index += 1
+		print(option_display)
 
-	def print_stack(self):
-		print("\nStack is:")
-		for char in self.stack:
-			print(char)
+		choice = input("\nEnter a move: ")
 
+		self.execute_attack(options_list[int(choice)-1], character)
+		
+	# Figures out targets for attack
+	def execute_attack(self, attack, source):
+		if(attack.target == "ST"):
+			targets = []
+			if(source in self.side1):
+				for character in self.side2 if attack.type != "buff" else self.side1:
+					targets.append(character)
+			elif(source in self.side2):
+				for character in self.side1 if attack.type != "buff" else self.side1:
+					targets.append(character)
 
+			index = 1
+			target_display = ""
+			for target in targets:
+				target_display = target_display+str(index)+'.'+target.name+"     "
+			print(target_display)
+
+			choice = input("\nPick a target: ")
+			chosen_target = targets[int(choice)-1]
+
+			attack.resolve_attack(source, [chosen_target])
+
+		elif(attack.target == "AoE"):
+			targets = []
+			if(source in self.side1):
+				for character in self.side2:
+					targets.append(character)
+			elif(source in self.side2):
+				for character in self.side1:
+					targets.append(character)
+
+			attack.resolve_attack(source, targets)
+
+		self.end_attack()
+
+	# Finish turn
+	def end_attack(self):
+
+		for char in self.side1+self.side2:
+			if(char.HP <= 0):
+				self.counter.pop(char)
+				if(char in self.side1):
+					self.side1.remove(char)
+				else:
+					self.side2.remove(char)
+
+		self.print_status()
+
+	# Print functions
+
+	def print_counter(self):
+		print("\nCharacter           Time Remaining")
+		print("___________         _______________")
+
+		for key,val in self.counter.items():
+			spaces = ""
+			for i in range(0,20-len(key.name)):
+				spaces = spaces + ' '
+			print(key.name+spaces+str(val))
+
+	def print_status(self):
+		print('\n'+"*******Side 1*******")
+		for char in self.side1:
+			char.print_stats()
+
+		print('\n'+"*******Side 2*******")
+		for char in self.side2:
+			char.print_stats()
 
 
 class Character:
 
-	def __init__(self, name, HP, mHP, SP, mSP, STR, mSTR, MGI, mMGI, \
-				DEX, mDEX, DEF, mDEF, RES, mRES, SPD, mSPD, element):
-		self.name = name
-		self.HP = HP
-		self.SP = SP
-		self.STR = STR
-		self.MGI = MGI
-		self.DEX = DEX
-		self.DEF = DEF
-		self.RES = RES
-		self.SPD = SPD
-		self.element = element
+	#format = name, HP, mHP, SP, mSP, STR, mSTR, MGI, mMGI, DEX, mDEX, DEF, mDEF, RES, mRES, SPD, mSPD, element
+
+	def __init__(self, data):
+		self.name = data[0]
+		self.HP = data[1]
+		self.SP = data[3]
+		self.STR = data[5]
+		self.MGI = data[7]
+		self.DEX = data[9]
+		self.DEF = data[11]
+		self.RES = data[13]
+		self.SPD = data[15]
+		self.element = data[17]
 
 
-		self.bHP = HP
-		self.bSP = SP
-		self.bSTR = STR
-		self.bMGI = MGI
-		self.bDEX = DEX
-		self.bDEF = DEF
-		self.bRES = RES
-		self.bSPD = SPD
+		self.bHP = self.HP
+		self.bSP = self.SP
+		self.bSTR = self.STR
+		self.bMGI = self.MGI
+		self.bDEX = self.DEX
+		self.bDEF = self.DEF
+		self.bRES = self.RES
+		self.bSPD = self.SPD
 
-		self.mHP = mHP
-		self.mSP = mSP
-		self.mSTR = mSTR
-		self.mMGI = mMGI
-		self.mDEX = mDEX
-		self.mDEF = mDEF
-		self.mRES = mRES
-		self.mSPD = mSPD
+		self.mHP = data[2]
+		self.mSP = data[4]
+		self.mSTR = data[6]
+		self.mMGI = data[8]
+		self.mDEX = data[10]
+		self.mDEF = data[12]
+		self.mRES = data[14]
+		self.mSPD = data[16]
+
+		self.attacks = []
 
 		self.level = 1
 		self.XP = 0
 		self.AP = 0
+
+	# Adds attacks to a character given a list of strings and attacks
+	def add_attack(self, data_list, attack_list):
+		for attack_to_add in data_list:
+			for each_attack in attack_list:
+				if(each_attack.name == attack_to_add):
+					attack = each_attack
+			self.attacks.append(attack)
 
 	def stat_update(self):
 		level_gained = 0
@@ -126,9 +227,12 @@ class Character:
 		self.XP += xp_gain
 		self.stat_update()
 
+	# Print functions	
+
 	def print_stats(self):
 		print()
-		print(self.name+"'s stats are now:")
+		print(self.name+":")
+		print("________________________________________")
 		print("HP =",int(self.HP),"	STR =",int(self.STR),"	MGI =",int(self.MGI))
 		print("DEX =",int(self.DEX),"	DEF =",int(self.DEF),"	RES =",int(self.RES))
 		print("SPD =",int(self.SPD))
@@ -137,11 +241,82 @@ class Character:
 		print('\n'+"XP:",str(self.XP)+"/100" if self.level != 90 else str(self.XP))
 		print("AP:",str(self.AP))
 
+	def print_attacks(self):
+		print('\n'+self.name+"'s attacks are:")
+		for attack in self.attacks:
+			attack.print_attack()
+
+	def print_simple_attacks(self):
+		print('\n'+self.name+"'s attacks are:")
+		for attack in self.attacks:
+			print(attack.name+':',attack.desc)
 
 def main():
 
+	attack_list = []
+
 	## Elements : Fire = F / Ice = I / Wind = W / Lightning = L
 
+	# Load character data
+
+	with open('kiyomi_info.csv') as k_info_file:
+		info = csv.reader(k_info_file, delimiter = ',')
+		info.__next__()
+		data_line = info.__next__()
+		for i in range(1, len(data_line)-1):
+			data_line[i] = int(data_line[i])
+		kiyomi = Character(data_line)
+
+
+	with open('airi_info.csv') as ai_info_file:
+		info = csv.reader(ai_info_file, delimiter = ',')
+		info.__next__()
+		data_line = info.__next__()
+		for i in range(1, len(data_line)-1):
+			data_line[i] = int(data_line[i])
+		airi = Character(data_line)
+
+	with open('shinji_info.csv') as s_info_file:
+		info = csv.reader(s_info_file, delimiter = ',')
+		info.__next__()
+		data_line = info.__next__()
+		for i in range(1, len(data_line)-1):
+			data_line[i] = int(data_line[i])
+		shinji = Character(data_line)
+
+	with open('ayame_info.csv') as aya_info_file:
+		info = csv.reader(aya_info_file, delimiter = ',')
+		info.__next__()
+		data_line = info.__next__()
+		for i in range(1, len(data_line)-1):
+			data_line[i] = int(data_line[i])
+		ayame = Character(data_line)
+
+	# Load attack data
+	with open('attack_info.csv') as attack_info_file:
+		info = csv.reader(attack_info_file, delimiter = ',')
+		info.__next__()
+		for row in info:
+			row[5] = int(row[5])
+			attack_list.append(Attack(row))
+
+
+	# Give attacks to characters
+	kiyomi_attacks = ["Cut", "Slice", "Recover"]
+	kiyomi.add_attack(kiyomi_attacks, attack_list)
+	airi_attacks = ["Cut", "Slice", "Recover"]
+	airi.add_attack(airi_attacks, attack_list)
+	ayame_attacks = ["Cut", "Slice"]
+	ayame.add_attack(ayame_attacks, attack_list)
+
+	kiyomi.print_simple_attacks()
+	airi.print_simple_attacks()
+	ayame.print_simple_attacks()
+
+	#airi.print_stats()
+	#airi.print_attacks()
+
+	"""
 	k = Character("Kiyomi",		120, 600, 70, 350, \
                     			5, 80, 3, 68, \
 				     			4, 74, 3, 68, \
@@ -161,13 +336,17 @@ def main():
                     			6, 86, 2, 62, \
 				     			4, 82, 2, 62, \
                             	1, 56, 2, 62, 'F')
+    """
 
-	battle = Battle([(k,1), (ai,1), (aya,1)])
+    # Begin battle
+	battle = Battle([(kiyomi,2), (airi,1), (ayame,2)])
 
 
-	battle.print_stack()
+	battle.print_counter()
 
-	battle.update_stack()
+	battle.battle_start()
+
+	"""
 
 	r = Character("Rika", 		100, 500, 90, 450, \
                     			1, 56, 5, 80, \
@@ -188,6 +367,7 @@ def main():
                     			3, 68, 2, 62, \
 				     			5, 90, 4, 74, \
                             	3, 68, 3, 68, 'N')
+    """
 
 
 	return
