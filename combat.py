@@ -272,37 +272,37 @@ def main():
 	character_list = []
 	## Elements : Fire = F / Ice = I / Wind = W / Lightning = L
 
-	# Load character data
-
-	with open("character_info.csv") as char_info_file:
-		info = csv.reader(char_info_file, delimiter = ',')
-		info.__next__()
-		for data_line in info:
-			for i in range(1, len(data_line)-1):
-				data_line[i] = int(data_line[i])
-			character_list.append(Character(data_line))
-
 	# Load attack data
+
 	with open('attack_info.csv') as attack_info_file:
 		info = csv.reader(attack_info_file, delimiter = ',')
 		info.__next__()
 		for row in info:
 			row[5] = int(row[5])
 			attack_list.append(Attack(row))
+		print("Attack loading finished!")
 
+	# Load character data
+
+	with open("character_info.csv") as char_info_file:
+		info = csv.reader(char_info_file, delimiter = ',')
+		info.__next__()
+		try:
+			while(True):
+				data_line = info.__next__()
+				for i in range(1, len(data_line)-1):
+					data_line[i] = int(data_line[i])
+				new_char = Character(data_line)
+				attack_line = info.__next__()
+				new_char.add_attack(attack_line, attack_list)
+				character_list.append(new_char)
+		except StopIteration:
+			print("Character loading finished!")
 
 	# Initialize characters
 	kiyomi = new_character("Kiyomi", character_list)
 	airi = new_character("Airi", character_list)
 	ayame = new_character("Ayame", character_list)
-
-	# Give attacks to characters
-	kiyomi_attacks = ["Cut", "Slice", "Recover"]
-	kiyomi.add_attack(kiyomi_attacks, attack_list)
-	airi_attacks = ["Cut", "Slice", "Recover"]
-	airi.add_attack(airi_attacks, attack_list)
-	ayame_attacks = ["Cut", "Slice"]
-	ayame.add_attack(ayame_attacks, attack_list)
 
 	kiyomi.print_simple_attacks()
 	airi.print_simple_attacks()
