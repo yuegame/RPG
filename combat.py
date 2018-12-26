@@ -1,5 +1,6 @@
 import sys
 import csv
+import copy
 from math import inf, sqrt
 from heapq import heappop, heappush
 from attack_data import Attack
@@ -251,46 +252,32 @@ class Character:
 		for attack in self.attacks:
 			print(attack.name+':',attack.desc)
 
+def new_character(name, char_list):
+	new_char = None
+	for character in char_list:
+		if(character.name == name):
+			new_char = copy.deepcopy(character)
+	if(new_char	is None):
+		print("Invalid character initialization!")
+
+	return new_char
+
 def main():
 
 	attack_list = []
 
+	character_list = []
 	## Elements : Fire = F / Ice = I / Wind = W / Lightning = L
 
 	# Load character data
 
-	with open('kiyomi_info.csv') as k_info_file:
-		info = csv.reader(k_info_file, delimiter = ',')
+	with open("character_info.csv") as char_info_file:
+		info = csv.reader(char_info_file, delimiter = ',')
 		info.__next__()
-		data_line = info.__next__()
-		for i in range(1, len(data_line)-1):
-			data_line[i] = int(data_line[i])
-		kiyomi = Character(data_line)
-
-
-	with open('airi_info.csv') as ai_info_file:
-		info = csv.reader(ai_info_file, delimiter = ',')
-		info.__next__()
-		data_line = info.__next__()
-		for i in range(1, len(data_line)-1):
-			data_line[i] = int(data_line[i])
-		airi = Character(data_line)
-
-	with open('shinji_info.csv') as s_info_file:
-		info = csv.reader(s_info_file, delimiter = ',')
-		info.__next__()
-		data_line = info.__next__()
-		for i in range(1, len(data_line)-1):
-			data_line[i] = int(data_line[i])
-		shinji = Character(data_line)
-
-	with open('ayame_info.csv') as aya_info_file:
-		info = csv.reader(aya_info_file, delimiter = ',')
-		info.__next__()
-		data_line = info.__next__()
-		for i in range(1, len(data_line)-1):
-			data_line[i] = int(data_line[i])
-		ayame = Character(data_line)
+		for data_line in info:
+			for i in range(1, len(data_line)-1):
+				data_line[i] = int(data_line[i])
+			character_list.append(Character(data_line))
 
 	# Load attack data
 	with open('attack_info.csv') as attack_info_file:
@@ -300,6 +287,11 @@ def main():
 			row[5] = int(row[5])
 			attack_list.append(Attack(row))
 
+
+	# Initialize characters
+	kiyomi = new_character("Kiyomi", character_list)
+	airi = new_character("Airi", character_list)
+	ayame = new_character("Ayame", character_list)
 
 	# Give attacks to characters
 	kiyomi_attacks = ["Cut", "Slice", "Recover"]
